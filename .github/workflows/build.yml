@@ -26,11 +26,10 @@ jobs:
           libminiupnpc-dev libzmq3-dev libqrencode-dev \
           libsqlite3-dev bsdmainutils curl git python3 libssl-dev
 
+  
     - name: Build and install Berkeley DB 4.8
       run: |
-        mkdir -p depends
         cd depends
-        curl -L -o db-4.8.30.NC.tar.gz https://mirror.bitcoinabc.org/berkeley-db-4.8/db-4.8.30.NC.tar.gz
         tar -xzvf db-4.8.30.NC.tar.gz
         cd db-4.8.30.NC/build_unix
         ../dist/configure --enable-cxx --disable-shared --with-pic --prefix=/tmp/db4
