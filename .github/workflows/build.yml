@@ -32,23 +32,8 @@ jobs:
         tar -xzvf db-4.8.30.NC.tar.gz
         cd db-4.8.30.NC
 
-        # ✅ echo 방식으로 patch 파일 생성 (YAML-safe)
-        echo "diff --git a/dbinc/atomic.h b/dbinc/atomic.h" >> atomic.patch
-        echo "index 74b7339..0f7cc65 100644" >> atomic.patch
-        echo "--- a/dbinc/atomic.h" >> atomic.patch
-        echo "+++ b/dbinc/atomic.h" >> atomic.patch
-        echo "@@ -174,7 +174,7 @@" >> atomic.patch
-        echo "#define atomic_inc(env, a)  atomic_add(env, a, 1)" >> atomic.patch
-        echo "" >> atomic.patch
-        echo "static inline int" >> atomic.patch
-        echo "-__atomic_compare_exchange(db_atomic_t *atomic, atomic_value_t oldval, atomic_value_t newval)" >> atomic.patch
-        echo "+__db_atomic_compare_exchange(db_atomic_t *atomic, atomic_value_t oldval, atomic_value_t newval)" >> atomic.patch
-        echo "{" >> atomic.patch
-        echo "    return (__atomic_compare_exchange_n(&atomic->value, &oldval," >> atomic.patch
-        echo "        newval, 0, __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST));" >> atomic.patch
-        echo "}" >> atomic.patch
-
-        patch -p1 < atomic.patch
+        # ✅ GCC 11+ 대응: atomic.h 내 중복 심볼 제거 (sed로 직접 수정)
+        sed -i 's/__atomic_compare_exchange(/__db_atomic_compare_exchange(/g' dbinc/atomic.h
 
         cd build_unix
         ../dist/configure --enable-cxx --disable-shared --with-pic --prefix=/tmp/db4
