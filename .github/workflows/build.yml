@@ -42,9 +42,10 @@ jobs:
 
     - name: Configure BitSteal
       run: |
-        # ✅ Makefile 존재하지 않는 경로들을 미리 만들어줌 (configure.ac에서 필요함)
+        # ✅ Makefile 경로 에러 방지용 빈 파일 생성
         mkdir -p src/qt/test
         mkdir -p src/test
+        touch src/qt/Makefile src/qt/test/Makefile src/test/Makefile
 
         ./autogen.sh
         ./configure --disable-tests --without-gui --without-bench \
