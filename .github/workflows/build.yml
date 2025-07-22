@@ -42,6 +42,10 @@ jobs:
 
     - name: Configure BitSteal
       run: |
+        # ✅ Makefile 존재하지 않는 경로들을 미리 만들어줌 (configure.ac에서 필요함)
+        mkdir -p src/qt/test
+        mkdir -p src/test
+
         ./autogen.sh
         ./configure --disable-tests --without-gui --without-bench \
           BDB_LIBS="-L/tmp/db4/lib -ldb_cxx-4.8" \
