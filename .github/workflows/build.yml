@@ -1,23 +1,52 @@
+name: Build BitSteal
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+
+    - name: Install dependencies
+      run: |
+        sudo apt update
+        sudo apt install -y \
+          autoconf libtool pkg-config build-essential \
+          libevent-dev libboost-dev libboost-system-dev \
+          libboost-filesystem-dev libboost-test-dev libboost-thread-dev \
+          libminiupnpc-dev libzmq3-dev libqrencode-dev \
+          libsqlite3-dev bsdmainutils curl git python3 libssl-dev
+
     - name: Build and install Berkeley DB 4.8 (patched for GCC)
       run: |
         cd depends
         tar -xzvf db-4.8.30.NC.tar.gz
         cd db-4.8.30.NC
 
+        # ✅ echo 방식으로 patch 파일 생성 (YAML-safe)
         echo "diff --git a/dbinc/atomic.h b/dbinc/atomic.h" >> atomic.patch
         echo "index 74b7339..0f7cc65 100644" >> atomic.patch
         echo "--- a/dbinc/atomic.h" >> atomic.patch
         echo "+++ b/dbinc/atomic.h" >> atomic.patch
         echo "@@ -174,7 +174,7 @@" >> atomic.patch
-        echo " #define atomic_inc(env, a)  atomic_add(env, a, 1)" >> atomic.patch
+        echo "#define atomic_inc(env, a)  atomic_add(env, a, 1)" >> atomic.patch
         echo "" >> atomic.patch
-        echo " static inline int" >> atomic.patch
+        echo "static inline int" >> atomic.patch
         echo "-__atomic_compare_exchange(db_atomic_t *atomic, atomic_value_t oldval, atomic_value_t newval)" >> atomic.patch
         echo "+__db_atomic_compare_exchange(db_atomic_t *atomic, atomic_value_t oldval, atomic_value_t newval)" >> atomic.patch
-        echo " {" >> atomic.patch
-        echo "     return (__atomic_compare_exchange_n(&atomic->value, &oldval," >> atomic.patch
-        echo "         newval, 0, __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST));" >> atomic.patch
-        echo " }" >> atomic.patch
+        echo "{" >> atomic.patch
+        echo "    return (__atomic_compare_exchange_n(&atomic->value, &oldval," >> atomic.patch
+        echo "        newval, 0, __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST));" >> atomic.patch
+        echo "}" >> atomic.patch
 
         patch -p1 < atomic.patch
 
@@ -26,4 +55,14 @@
         make -j$(nproc)
         make install
 
+    - name: Configure BitSteal
+      run: |
+        ./autogen.sh
+        ./configure --disable-tests --without-gui --without-bench \
+          BDB_LIBS="-L/tmp/db4/lib -ldb_cxx-4.8" \
+          BDB_CFLAGS="-I/tmp/db4/include" \
+          CXXFLAGS="-Wno-unused-result"
+
+    - name: Build BitSteal
+      run: make -j$(nproc)
 
