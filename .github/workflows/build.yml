@@ -32,22 +32,20 @@ jobs:
         tar -xzvf db-4.8.30.NC.tar.gz
         cd db-4.8.30.NC
 
-        # ✅ Apply GCC compatibility patch to atomic.h
-        cat << 'EOF' > atomic.patch
-diff --git a/dbinc/atomic.h b/dbinc/atomic.h
+        # Patch atomic.h to avoid GCC builtin conflict
+        echo "diff --git a/dbinc/atomic.h b/dbinc/atomic.h
 index 74b7339..0f7cc65 100644
 --- a/dbinc/atomic.h
 +++ b/dbinc/atomic.h
 @@ -174,7 +174,7 @@
  #define atomic_inc(env, a)  atomic_add(env, a, 1)
- 
+
  static inline int
 -__atomic_compare_exchange(db_atomic_t *atomic, atomic_value_t oldval, atomic_value_t newval)
 +__db_atomic_compare_exchange(db_atomic_t *atomic, atomic_value_t oldval, atomic_value_t newval)
  {
      return (__atomic_compare_exchange_n(&atomic->value, &oldval,
-         newval, 0, __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST));
-EOF
+         newval, 0, __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST));" > atomic.patch
 
         patch -p1 < atomic.patch
 
