@@ -1,3 +1,31 @@
+name: Build BitSteal
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+
+    - name: Install dependencies
+      run: |
+        sudo apt update
+        sudo apt install -y \
+          autoconf libtool pkg-config build-essential \
+          libevent-dev libboost-dev libboost-system-dev \
+          libboost-filesystem-dev libboost-test-dev libboost-thread-dev \
+          libminiupnpc-dev libzmq3-dev libqrencode-dev \
+          libsqlite3-dev bsdmainutils curl git python3 libssl-dev
+
     - name: Build and install Berkeley DB 4.8
       run: |
         mkdir -p depends
@@ -8,4 +36,15 @@
         ../dist/configure --enable-cxx --disable-shared --with-pic --prefix=/tmp/db4
         make -j$(nproc)
         make install
+
+    - name: Configure BitSteal
+      run: |
+        ./autogen.sh
+        ./configure --disable-tests --without-gui --without-bench \
+          BDB_LIBS="-L/tmp/db4/lib -ldb_cxx-4.8" \
+          BDB_CFLAGS="-I/tmp/db4/include" \
+          CXXFLAGS="-Wno-unused-result"
+
+    - name: Build BitSteal
+      run: make -j$(nproc)
 
