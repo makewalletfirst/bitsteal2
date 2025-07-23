@@ -32,7 +32,7 @@ jobs:
         tar -xzvf db-4.8.30.NC.tar.gz
         cd db-4.8.30.NC
 
-        # ✅ GCC 11+ 대응: atomic.h 내 중복 심볼 제거 (sed로 직접 수정)
+        # ✅ GCC 11+ 대응: atomic.h 내 중복 심볼 sed로 처리
         sed -i 's/__atomic_compare_exchange(/__db_atomic_compare_exchange(/g' dbinc/atomic.h
 
         cd build_unix
@@ -42,7 +42,7 @@ jobs:
 
     - name: Configure BitSteal
       run: |
-        # ✅ Makefile 경로 에러 방지용 빈 파일 생성
+        # ✅ 누락 Makefile 경로 대응
         mkdir -p src/qt/test
         mkdir -p src/test
         touch src/qt/Makefile src/qt/test/Makefile src/test/Makefile
