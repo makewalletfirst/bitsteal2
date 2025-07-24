@@ -1,4 +1,3 @@
-
 *.exe
 *.pdb
 src/bitcoin
@@ -14,27 +13,10 @@ src/test/fuzz/fuzz
 src/test/test_bitcoin
 src/qt/test/test_bitcoin-qt
 
-# autoreconf
-Makefile.in
-aclocal.m4
-autom4te.cache/
-build-aux/config.guess
-build-aux/config.sub
-build-aux/depcomp
-build-aux/install-sh
-build-aux/ltmain.sh
-build-aux/m4/libtool.m4
-build-aux/m4/lt~obsolete.m4
-build-aux/m4/ltoptions.m4
-build-aux/m4/ltsugar.m4
-build-aux/m4/ltversion.m4
-build-aux/missing
-build-aux/compile
-build-aux/test-driver
+# autoreconf (다음 항목은 제거하지 말 것: configure, Makefile.in, aclocal.m4, build-aux/*)
 config.cache
 config.log
 config.status
-configure
 libtool
 src/config/bitcoin-config.h
 src/config/bitcoin-config.h.in
@@ -146,6 +128,9 @@ db4/
 osx_volname
 dist/
 
+# Guix scratch
 /guix-build-*
 
+# CI
 /ci/scratch/
+
